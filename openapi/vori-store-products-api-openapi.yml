@@ -1,0 +1,2458 @@
+openapi: 3.0.0
+info:
+  title: Vori Store products API
+  description: Read and manage your store catalog, vendors, and inventory. Requests require a bearer token; see "Connect to the Vori REST API" for how to obtain one.
+  version: 1.0.0
+  contact: {}
+servers:
+- url: https://api.vori.com
+  description: production
+security: []
+tags:
+- name: Store products
+paths:
+  /v1/store-products:
+    post:
+      tags:
+      - Store products
+      summary: Create store product
+      operationId: createStoreProduct
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateStoreProductWrapperDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoreProductDto'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/DuplicateBarcodeTypesForProductError'
+                - $ref: '#/components/schemas/DuplicateBarcodesError'
+                - $ref: '#/components/schemas/InvalidBarcodeError'
+                - $ref: '#/components/schemas/InvalidDepartmentError'
+                - $ref: '#/components/schemas/InvalidFoodModifiersError'
+                - $ref: '#/components/schemas/InvalidItemModifiersError'
+                - $ref: '#/components/schemas/InvalidTaxRatesError'
+                - $ref: '#/components/schemas/InvalidUnitOfMeasureError'
+                - $ref: '#/components/schemas/InvalidVariableWeightsError'
+                - $ref: '#/components/schemas/SoftDeletedBarcodeConflictError'
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/InsufficientPermissionsError'
+                - $ref: '#/components/schemas/NoBannerAssociationError'
+      security:
+      - bearer: []
+    get:
+      tags:
+      - Store products
+      summary: List store products
+      description: Lists store products. Use the `state` parameter to filter, sort, and paginate results.
+      operationId: listStoreProducts
+      parameters:
+      - name: state
+        required: false
+        in: query
+        description: "Filter, sort, and paginate products with a URL-encoded JSON object:\n\n```json\n{\n  \"startRow\": 0,\n  \"endRow\": 50,\n  \"filterModel\": { \"<field>\": <filter> },\n  \"sortModel\": [{ \"colId\": \"<field>\", \"sort\": \"asc\" }]\n}\n```\n\nAny other top-level property is rejected.\n\n**Pagination** — `startRow` and `endRow` select which slice of results to return: `startRow` defaults to 0, and `endRow` defaults to `startRow` plus 10. You can request at most 1000 rows at a time (`endRow - startRow <= 1000`). The response's `rowCount` field always reflects the total number of matching rows across the entire result set, not just the rows returned in this request.\n\n**Sorting** — `sortModel` orders results by any filterable field except the related-entity fields, plus `id`. If you don't specify a `sortModel`, results are sorted by `created_at` descending (newest first).\n\n**Filtering** — `filterModel` is an object keyed by field name, where each value describes how to match that field:\n\n| Filter | Example | `type` values | Fields |\n| ------ | ------- | --------------- | ------ |\n| Set | `{\"filterType\": \"set\", \"values\": [\"1\", \"2\"]}` | <ul><li><code>in</code></li><li><code>notIn</code></li></ul> | <ul><li><code>barcode_type</code></li><li><code>retail_price_uom_id</code></li><li><code>store_department_id</code></li><li><code>store_id</code></li><li><code>unit_of_measure_mapping_id</code></li></ul> |\n| Boolean | `{\"filterType\": \"boolean\", \"values\": [true]}` | <ul><li><code>in</code></li><li><code>notIn</code></li></ul> | <ul><li><code>active</code></li><li><code>earns_loyalty_points</code></li><li><code>ebt_enabled</code></li><li><code>ecommerce_enabled</code></li><li><code>esl_enabled</code></li><li><code>is_blackhawk_gift_card</code></li><li><code>is_reloadable_blackhawk_gift_card</code></li><li><code>is_tippable</code></li><li><code>manual_item</code></li><li><code>print_physical_tag</code></li><li><code>prompt_for_quantity</code></li><li><code>snap_incentive_earnable</code></li><li><code>snap_incentive_redeemable</code></li><li><code>sync_to_deli_scales</code></li><li><code>variable_sale_price</code></li><li><code>wic_enabled</code></li></ul> |\n| Text | `{\"filterType\": \"text\", \"type\": \"contains\", \"filter\": \"cola\"}` | <ul><li><code>equals</code></li><li><code>notEqual</code></li><li><code>contains</code></li><li><code>notContains</code></li><li><code>startsWith</code></li><li><code>endsWith</code></li><li><code>blank</code></li><li><code>notBlank</code></li></ul> | <ul><li><code>barcode</code></li><li><code>brand_string</code></li><li><code>country_of_origin</code></li><li><code>description</code></li><li><code>name</code></li><li><code>raw_barcode</code></li><li><code>unit_volume_string</code></li><li><code>wic_override_plu</code></li></ul> |\n| Number | `{\"filterType\": \"number\", \"type\": \"greaterThan\", \"filter\": 10}` | <ul><li><code>equals</code></li><li><code>notEqual</code></li><li><code>lessThan</code></li><li><code>lessThanOrEqual</code></li><li><code>greaterThan</code></li><li><code>greaterThanOrEqual</code></li><li><code>inRange</code></li><li><code>blank</code></li><li><code>notBlank</code></li></ul> | <ul><li><code>base_retail_price</code></li><li><code>case_cost</code></li><li><code>case_size</code></li><li><code>current_margin</code></li><li><code>each_cost</code></li><li><code>lb_cost</code></li><li><code>min_customer_age</code></li><li><code>pack_size</code></li><li><code>store_product.unit_of_measure_amount</code></li><li><code>target_margin</code></li></ul> |\n| Date | `{\"filterType\": \"date\", \"type\": \"greaterThan\", \"dateFrom\": \"2026-01-01\", \"dateTo\": null}` | <ul><li><code>equals</code></li><li><code>notEqual</code></li><li><code>lessThan</code></li><li><code>greaterThan</code></li><li><code>inRange</code></li><li><code>blank</code></li><li><code>notBlank</code></li></ul> | <ul><li><code>base_retail_price_start_time</code></li><li><code>created_at</code></li><li><code>updated_at</code></li></ul> |\n| Related entities | `{\"filterType\": \"set\", \"values\": [\"1\"]}` | <ul><li><code>in</code></li></ul> | <ul><li><code>store_product_item_modifiers.item_modifier_id</code></li><li><code>store_product_tax_rates.tax_rate_id</code></li><li><code>store_product_variable_weights.variable_weight_id</code></li></ul> |\n| Product group rules | `{\"filterType\": \"set\", \"values\": [\"0195f9a8-7d64-7c3a-b7f5-3e0a5a2b9c11\"]}` | <ul><li><code>in</code></li></ul> | <ul><li><code>store_product_group_rule_ids</code></li></ul> |\n\n`type` is optional for set and boolean filters and defaults to `in`. Boolean fields also accept set filters, and date fields also accept `\"filterType\": \"datetime\"`. Set filters must be flat — compound `AND`/`OR` conditions are rejected."
+        schema:
+          $ref: '#/components/schemas/DataFrameListConfigDto'
+      - name: include
+        required: false
+        in: query
+        description: 'Comma-separated list of related data to include on each product:
+
+
+          - `active_vendor` — Populates `active_vendor` with the product''s primary vendor.
+
+          - `active_vendor_product` — Populates `active_vendor_product` with the primary vendor''s catalog entry, including costs.
+
+          - `inventory` — Populates `inventory` with on-hand quantity data.
+
+          - `store_vendor_products` — Populates `store_vendor_products` with every vendor''s catalog entry for the product.'
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/StoreProductLoaders'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoreProductsListDto'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/InvalidStoresError'
+                - $ref: '#/components/schemas/UnsupportedStateFieldError'
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/InsufficientPermissionsError'
+                - $ref: '#/components/schemas/NoBannerAssociationError'
+      security:
+      - bearer: []
+  /v1/store-products/{id}/rules:
+    get:
+      tags:
+      - Store products
+      summary: Get processed store product rule
+      operationId: getProcessedStoreProductRule
+      parameters:
+      - name: id
+        required: true
+        in: path
+        schema:
+          type: string
+          pattern: ^[0-9]+$
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessedStoreProductRuleDto'
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/InsufficientPermissionsError'
+                - $ref: '#/components/schemas/NoBannerAssociationError'
+        '404':
+          description: ''
+      security:
+      - bearer: []
+  /v1/store-products/{id}:
+    get:
+      tags:
+      - Store products
+      summary: Get store product
+      operationId: getStoreProduct
+      parameters:
+      - name: id
+        required: true
+        in: path
+        schema:
+          type: string
+          pattern: ^[0-9]+$
+      - name: include
+        required: false
+        in: query
+        description: 'Comma-separated list of related data to include on each product:
+
+
+          - `active_vendor` — Populates `active_vendor` with the product''s primary vendor.
+
+          - `active_vendor_product` — Populates `active_vendor_product` with the primary vendor''s catalog entry, including costs.
+
+          - `inventory` — Populates `inventory` with on-hand quantity data.
+
+          - `store_vendor_products` — Populates `store_vendor_products` with every vendor''s catalog entry for the product.'
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/StoreProductLoaders'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoreProductDto'
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/InsufficientPermissionsError'
+                - $ref: '#/components/schemas/NoBannerAssociationError'
+        '404':
+          description: ''
+      security:
+      - bearer: []
+    patch:
+      tags:
+      - Store products
+      summary: Update store product
+      operationId: updateStoreProduct
+      parameters:
+      - name: id
+        required: true
+        in: path
+        schema:
+          type: string
+          pattern: ^[0-9]+$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStoreProductWrapperDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoreProductDto'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/DuplicateBarcodeTypesForProductError'
+                - $ref: '#/components/schemas/DuplicateBarcodesError'
+                - $ref: '#/components/schemas/InvalidBarcodeError'
+                - $ref: '#/components/schemas/InvalidDepartmentError'
+                - $ref: '#/components/schemas/InvalidFoodModifiersError'
+                - $ref: '#/components/schemas/InvalidItemModifiersError'
+                - $ref: '#/components/schemas/InvalidTaxRatesError'
+                - $ref: '#/components/schemas/InvalidUnitOfMeasureError'
+                - $ref: '#/components/schemas/InvalidVariableWeightsError'
+                - $ref: '#/components/schemas/SoftDeletedBarcodeConflictError'
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/InsufficientPermissionsError'
+                - $ref: '#/components/schemas/NoBannerAssociationError'
+        '404':
+          description: ''
+      security:
+      - bearer: []
+  /v1/store-products/rules:
+    get:
+      tags:
+      - Store products
+      summary: List processed store product rules
+      operationId: listProcessedStoreProductRules
+      parameters:
+      - name: state
+        required: false
+        in: query
+        schema:
+          type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListProcessedStoreProductRuleDto'
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/InsufficientPermissionsError'
+                - $ref: '#/components/schemas/NoBannerAssociationError'
+      security:
+      - bearer: []
+  /v1/store-products/{id}/history:
+    get:
+      tags:
+      - Store products
+      summary: List store product history
+      description: Retrieve change history for a specific store product
+      operationId: listStoreProductHistory
+      parameters:
+      - name: id
+        required: true
+        in: path
+        schema:
+          type: string
+          pattern: ^[0-9]+$
+      - name: state
+        required: false
+        in: query
+        schema:
+          type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListStoreProductHistoryDto'
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/InsufficientPermissionsError'
+                - $ref: '#/components/schemas/NoBannerAssociationError'
+        '404':
+          description: ''
+      security:
+      - bearer: []
+  /v1/store-products/{id}/restore:
+    post:
+      tags:
+      - Store products
+      summary: Restore store product
+      description: Restore a soft-deleted store product
+      operationId: restoreStoreProduct
+      parameters:
+      - name: id
+        required: true
+        in: path
+        schema:
+          type: string
+          pattern: ^[0-9]+$
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoreProductDto'
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsufficientPermissionsError'
+        '404':
+          description: ''
+      security:
+      - bearer: []
+  /v1/store-products/search:
+    get:
+      tags:
+      - Store products
+      summary: Search store products
+      description: Endpoint for fast full-text product search. This returns only what is indexed in Algolia and does not hit the database.
+      operationId: searchStoreProducts
+      parameters:
+      - name: page
+        required: false
+        in: query
+        schema:
+          minimum: 1
+          default: 1
+          type: integer
+      - name: take
+        required: false
+        in: query
+        schema:
+          minimum: 1
+          maximum: 1000
+          default: 10
+          type: integer
+      - name: store_ids
+        required: true
+        in: query
+        schema:
+          type: array
+          items:
+            type: string
+            pattern: ^-?[0-9]+$
+      - name: query
+        required: true
+        in: query
+        schema:
+          type: string
+      - name: active
+        required: false
+        in: query
+        schema:
+          type: boolean
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoreProductTypeaheadSearchPageDto'
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/InsufficientPermissionsError'
+                - $ref: '#/components/schemas/NoBannerAssociationError'
+      security:
+      - bearer: []
+components:
+  schemas:
+    StoreProductLoaders:
+      type: string
+      enum:
+      - active_vendor
+      - active_vendor_product
+      - inventory
+      - store_vendor_products
+    StoreProductBarcodeDto:
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        store_id:
+          type: string
+        barcode:
+          type: string
+        barcode_type:
+          allOf:
+          - $ref: '#/components/schemas/BarcodeType'
+        store_product_id:
+          type: string
+      required:
+      - id
+      - created_at
+      - updated_at
+      - store_id
+      - barcode
+      - barcode_type
+      - store_product_id
+    UpdatedByType:
+      type: string
+      enum:
+      - device
+      - import
+      - lane
+      - revision
+      - rule
+      - system
+      - temporal
+      - user
+    StoreProductRuleSummaryDto:
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        name:
+          type: string
+        store_id:
+          type: string
+          nullable: true
+        banner_id:
+          type: string
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StoreProductRuleStatus'
+        priority:
+          type: integer
+        target_values:
+          $ref: '#/components/schemas/TargetValuesDto'
+        type:
+          allOf:
+          - $ref: '#/components/schemas/StoreProductRuleType'
+        group_sales_reporting_type:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/SalesReportingType'
+        group_inventory_count_type:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/InventoryCountType'
+    InventoryCountType:
+      type: string
+      enum:
+      - individual
+      - individual_sum
+    StoreProductsListDto:
+      type: object
+      properties:
+        data:
+          description: Products in the requested row window.
+          type: array
+          items:
+            $ref: '#/components/schemas/StoreProductDto'
+        rowCount:
+          type: integer
+          description: Total number of products matching the filters, across all row windows.
+      required:
+      - data
+      - rowCount
+    CreateStoreProductDto:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        barcode:
+          type: string
+        disable_barcode_sanitization:
+          type: boolean
+          description: When true, the barcode is stored verbatim and the product's `barcode_type` is set to `Unsanitized`. When false, an existing `Unsanitized` product is re-sanitized on save. When omitted, the existing `barcode_type` is preserved (partial updates are safe).
+        department_id:
+          type: string
+          pattern: ^-?[0-9]+$
+        active:
+          type: boolean
+          default: true
+        retail_price:
+          type: string
+          nullable: true
+          format: positive-monetary
+          pattern: ^[0-9]+(\.[0-9]+)?$
+          example: '199.99'
+        minimum_retail_price:
+          type: string
+          nullable: true
+          format: positive-monetary
+          pattern: ^[0-9]+(\.[0-9]+)?$
+          example: '199.99'
+        maximum_retail_price:
+          type: string
+          nullable: true
+          format: positive-monetary
+          pattern: ^[0-9]+(\.[0-9]+)?$
+          example: '199.99'
+        retail_price_source:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/StoreProductPriceSource'
+        retail_price_source_platform:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/StoreProductPriceSourcePlatform'
+        retail_price_input_method:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/StoreProductPriceInputMethod'
+        retail_price_unit_of_measure_id:
+          type: string
+          nullable: true
+          pattern: ^-?[0-9]+$
+        brand:
+          type: string
+          nullable: true
+        target_margin:
+          type: number
+          nullable: true
+        case_size:
+          type: integer
+          nullable: true
+        pack_size:
+          type: integer
+          nullable: true
+        min_customer_age:
+          type: integer
+        loyalty_points_per_dollar:
+          type: string
+          nullable: true
+          pattern: ^[0-9]+(\.[0-9]+)?$
+          example: '199.99'
+        unit_volume_quantity:
+          type: string
+          nullable: true
+          pattern: ^[0-9]+(\.[0-9]+)?$
+          example: '199.99'
+        unit_volume_uom_name:
+          type: string
+          nullable: true
+        wic_enabled:
+          type: boolean
+          default: false
+        wic_override_plu:
+          type: string
+          nullable: true
+        snap_enabled:
+          type: boolean
+          default: false
+        ebt_enabled:
+          type: boolean
+          default: false
+        is_tippable:
+          type: boolean
+          default: false
+        is_blackhawk_gift_card:
+          type: boolean
+          default: false
+        is_reloadable_blackhawk_gift_card:
+          type: boolean
+          default: false
+        print_physical_tag:
+          type: boolean
+          default: false
+        ecommerce_enabled:
+          type: boolean
+          default: false
+        variable_sale_price:
+          type: boolean
+          default: false
+        sold_by_weight:
+          type: boolean
+          default: false
+        prompt_for_quantity:
+          type: boolean
+          default: false
+        manual_item:
+          type: boolean
+          default: false
+        tax_rate_ids:
+          type: array
+          items:
+            type: string
+            pattern: ^-?[0-9]+$
+        variable_weight_ids:
+          type: array
+          items:
+            type: string
+            pattern: ^-?[0-9]+$
+        item_modifier_ids:
+          type: array
+          items:
+            type: string
+            pattern: ^-?[0-9]+$
+        food_modifier_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        country_of_origin:
+          type: string
+          nullable: true
+          maxLength: 3
+          minLength: 3
+        store_vendor_products:
+          type: array
+          items:
+            $ref: '#/components/schemas/NestedSetStoreVendorProductDto'
+        primary_vendor_configuration:
+          allOf:
+          - $ref: '#/components/schemas/PrimaryVendorConfiguration'
+        sync_to_deli_scales:
+          type: boolean
+          default: false
+        alcohol_by_volume:
+          type: string
+          nullable: true
+          pattern: ^[0-9]+(\.[0-9]+)?$
+          example: '199.99'
+        notes:
+          type: string
+          nullable: true
+        ingredients:
+          type: string
+          nullable: true
+        shelf_life_days:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 999
+          description: Shelf life in days sent to deli scales (Hobart, eplum, Ishida); the scale computes the sell-by date from it. 1-999, or null for no Vori-managed shelf life.
+        last_printed_at:
+          type: string
+          nullable: true
+          format: date-time
+        inventory_change:
+          $ref: '#/components/schemas/InitialStoreProductInventoryDto'
+        par:
+          $ref: '#/components/schemas/NestedStoreProductParDto'
+        snap_incentive_earnable:
+          type: boolean
+          default: false
+        snap_incentive_redeemable:
+          type: boolean
+          default: false
+        discount_restrictions:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/DiscountRestriction'
+        store_product_group_rule_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+      required:
+      - name
+      - barcode
+      - department_id
+    InitialStoreProductInventoryDto:
+      type: object
+      properties:
+        count:
+          type: string
+          example: '199.99'
+          pattern: ^-?[0-9]+(\.[0-9]+)?$
+        source_type:
+          allOf:
+          - $ref: '#/components/schemas/InventoryChangeSourceType'
+        completed_at:
+          type: string
+          nullable: true
+          deprecated: true
+          format: date-time
+      required:
+      - count
+      - source_type
+    NestedTaxRateDto:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          allOf:
+          - $ref: '#/components/schemas/TaxRateType'
+        value:
+          type: string
+          pattern: ^[0-9]+(\.[0-9]+)?$
+          example: '199.99'
+        tax_type:
+          allOf:
+          - $ref: '#/components/schemas/TaxType'
+      required:
+      - id
+      - name
+      - type
+      - value
+      - tax_type
+    UpdateStoreProductWrapperDto:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/UpdateStoreProductDto'
+      required:
+      - data
+    ListProcessedStoreProductRuleDto:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProcessedStoreProductRuleDto'
+        rowCount:
+          type: number
+      required:
+      - data
+    DescriptionIdentifierDto:
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/StoreVendorProductIdentifierType'
+        description:
+          type: string
+      required:
+      - type
+      - description
+    ItemModifierTaxBehavior:
+      type: string
+      enum:
+      - EXCLUDE
+      - INHERIT_FROM_STORE_PRODUCT
+    NestedStoreProductInventoryDto:
+      type: object
+      properties:
+        current:
+          type: string
+          nullable: false
+          example: '199.99'
+          pattern: ^-?[0-9]+(\.[0-9]+)?$
+        min_par:
+          type: string
+          nullable: true
+        max_stock:
+          type: string
+          nullable: true
+        last_changed_at:
+          type: string
+          nullable: true
+          format: date-time
+      required:
+      - current
+      - min_par
+      - max_stock
+      - last_changed_at
+    DataFrameListConfigDto:
+      type: object
+      properties:
+        startRow:
+          type: integer
+        endRow:
+          type: integer
+        filterModel:
+          type: object
+        sortModel:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataFrameSortConfigDto'
+    SoftDeletedBarcodeConflictError:
+      type: object
+      properties:
+        error_code:
+          type: string
+          enum:
+          - soft_deleted_barcode_conflict
+        store_product_id:
+          type: string
+          pattern: ^[0-9]+$
+        store_product_name:
+          type: string
+      required:
+      - error_code
+      - store_product_id
+      - store_product_name
+    StoreProductDto:
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        deleted_at:
+          type: string
+          nullable: true
+          description: When the product was soft-deleted, or null if it has not been deleted.
+          format: date-time
+        store_id:
+          type: string
+          description: ID of the store this product belongs to.
+          pattern: ^[0-9]+$
+        department_id:
+          type: string
+          description: ID of the store department this product belongs to.
+          pattern: ^[0-9]+$
+        tax_rates:
+          description: Tax rates applied to this product at the register.
+          type: array
+          items:
+            $ref: '#/components/schemas/NestedTaxRateDto'
+        item_modifiers:
+          description: Item modifiers available for this product.
+          type: array
+          items:
+            $ref: '#/components/schemas/NestedItemModifierDto'
+        food_modifier_categories:
+          description: Food modifier categories, and their modifiers, available for this product, ordered by category priority.
+          type: array
+          items:
+            $ref: '#/components/schemas/NestedFoodModifierCategoryDto'
+        additional_barcodes:
+          description: Barcodes that resolve to this product in addition to the primary `barcode`.
+          type: array
+          items:
+            $ref: '#/components/schemas/StoreProductBarcodeDto'
+        variable_weights:
+          description: Preset weights for products sold by weight.
+          type: array
+          items:
+            $ref: '#/components/schemas/NestedVariableWeightDto'
+        active_vendor:
+          description: The vendor currently supplying this product.
+          allOf:
+          - $ref: '#/components/schemas/NestedStoreVendorDTO'
+        active_vendor_product:
+          description: The vendor catalog entry currently supplying this product.
+          allOf:
+          - $ref: '#/components/schemas/NestedStoreVendorProductDTO'
+        store_vendor_products:
+          description: Vendor catalog entries for this product.
+          type: array
+          items:
+            $ref: '#/components/schemas/NestedStoreVendorProductDTO'
+        inventory:
+          description: Current inventory levels. Included when requested via `include=inventory`.
+          allOf:
+          - $ref: '#/components/schemas/NestedStoreProductInventoryDto'
+        brand:
+          type: string
+          nullable: true
+          description: Brand name.
+        description:
+          type: string
+          nullable: true
+          description: Short description, intended for character-limited use cases (e.g., printed receipts).
+        active:
+          type: boolean
+          description: Whether the product is active.
+        name:
+          type: string
+          description: Human-readable product name.
+        barcode:
+          type: string
+          description: Primary barcode.
+        target_margin:
+          type: string
+          nullable: true
+          description: Target gross margin for pricing decisions, as a whole-number percentage (35 means 35%).
+          example: '199.99'
+          pattern: ^-?[0-9]+(\.[0-9]+)?$
+        case_size:
+          type: integer
+          nullable: true
+          description: Number of sellable units in a vendor case.
+        pack_size:
+          type: integer
+          nullable: true
+          description: Number of units in a retail pack.
+        print_physical_tag:
+          type: boolean
+          description: Whether a physical shelf tag should be printed for this product.
+        esl_enabled:
+          type: boolean
+          description: Whether electronic shelf labels are enabled for this product.
+        label_last_printed_at:
+          type: string
+          nullable: true
+          description: When a shelf tag was last printed for this product.
+          format: date-time
+        wicable:
+          type: integer
+          nullable: true
+          description: WIC eligibility indicator.
+        min_customer_age:
+          type: integer
+          nullable: true
+          description: Minimum customer age, in years, required to purchase.
+        wic_enabled:
+          type: boolean
+          description: Whether the product is eligible for WIC payment.
+        snap_enabled:
+          type: boolean
+          description: Whether the product is eligible for SNAP payment.
+        ebt_enabled:
+          type: boolean
+          description: Whether the product is eligible for EBT/SNAP payment.
+        ecommerce_enabled:
+          type: boolean
+          description: Whether the product is available for e-commerce.
+        variable_sale_price:
+          type: boolean
+          description: Whether the sale price is entered at the register instead of fixed.
+        sold_by_weight:
+          type: boolean
+          description: Whether the product is sold by weight rather than by unit.
+        prompt_for_quantity:
+          type: boolean
+          description: Whether the register prompts for a quantity when the product is scanned.
+        manual_item:
+          type: boolean
+          description: Whether the product is entered manually at the register rather than scanned.
+        is_tippable:
+          type: boolean
+          description: Whether purchases of this product can include a tip.
+        is_blackhawk_gift_card:
+          type: boolean
+          description: Whether the product is a Blackhawk gift card.
+        is_reloadable_blackhawk_gift_card:
+          type: boolean
+          description: Whether the product is a reloadable Blackhawk gift card.
+        snap_incentive_earnable:
+          type: boolean
+          description: Whether purchases of this product earn SNAP incentives.
+        snap_incentive_redeemable:
+          type: boolean
+          description: Whether SNAP incentives can be redeemed against this product.
+        discount_restrictions:
+          type: array
+          nullable: true
+          description: Discount types that may not be applied to this product.
+          items:
+            $ref: '#/components/schemas/DiscountRestriction'
+        loyalty_points_per_dollar:
+          type: string
+          nullable: true
+          description: Loyalty points earned per dollar spent. Null defaults to one point per dollar.
+          pattern: ^[0-9]+(\.[0-9]+)?$
+          example: '199.99'
+        unit_volume_quantity:
+          type: string
+          nullable: true
+          description: Net content quantity, in the unit given by `unit_volume_uom_name`.
+          example: '199.99'
+          pattern: ^-?[0-9]+(\.[0-9]+)?$
+        unit_volume_uom_name:
+          type: string
+          nullable: true
+          description: Unit of measure for `unit_volume_quantity`.
+        unit_price:
+          type: string
+          nullable: true
+          description: Retail price per unit of measure, in dollars.
+          example: '199.99'
+          pattern: ^-?[0-9]+(\.[0-9]+)?$
+        retail_price:
+          type: string
+          nullable: true
+          description: Current shelf/retail price in dollars.
+          format: positive-monetary
+          pattern: ^[0-9]+(\.[0-9]+)?$
+          example: '199.99'
+        minimum_retail_price:
+          type: string
+          nullable: true
+          description: Lower bound for the retail price, in dollars.
+          format: positive-monetary
+          pattern: ^[0-9]+(\.[0-9]+)?$
+          example: '199.99'
+        maximum_retail_price:
+          type: string
+          nullable: true
+          description: Upper bound for the retail price, in dollars.
+          format: positive-monetary
+          pattern: ^[0-9]+(\.[0-9]+)?$
+          example: '199.99'
+        retail_price_effective_at:
+          type: string
+          nullable: true
+          description: When the current retail price took effect.
+          format: date-time
+        retail_price_unit_of_measure:
+          nullable: true
+          description: Unit of measure the retail price applies to.
+          allOf:
+          - $ref: '#/components/schemas/UnitOfMeasureDto'
+        disable_pos_sync:
+          type: boolean
+          description: Whether synchronization of this product to the point-of-sale is disabled.
+        primary_vendor_configuration:
+          description: How the primary vendor is selected for this product.
+          allOf:
+          - $ref: '#/components/schemas/PrimaryVendorConfiguration'
+        country_of_origin:
+          type: string
+          nullable: true
+          maxLength: 3
+          minLength: 3
+          description: ISO 3166-1 alpha-3 country code of origin.
+        sync_to_deli_scales:
+          type: boolean
+          default: false
+          description: Whether the product is synchronized to deli scales.
+      required:
+      - id
+      - created_at
+      - updated_at
+      - deleted_at
+      - store_id
+      - department_id
+      - tax_rates
+      - item_modifiers
+      - food_modifier_categories
+      - additional_barcodes
+      - variable_weights
+      - brand
+      - description
+      - active
+      - name
+      - barcode
+      - target_margin
+      - case_size
+      - pack_size
+      - print_physical_tag
+      - esl_enabled
+      - label_last_printed_at
+      - wicable
+      - min_customer_age
+      - wic_enabled
+      - snap_enabled
+      - ebt_enabled
+      - ecommerce_enabled
+      - variable_sale_price
+      - sold_by_weight
+      - prompt_for_quantity
+      - manual_item
+      - is_tippable
+      - is_blackhawk_gift_card
+      - is_reloadable_blackhawk_gift_card
+      - snap_incentive_earnable
+      - snap_incentive_redeemable
+      - discount_restrictions
+      - loyalty_points_per_dollar
+      - unit_volume_quantity
+      - unit_volume_uom_name
+      - unit_price
+      - retail_price
+      - minimum_retail_price
+      - maximum_retail_price
+      - retail_price_effective_at
+      - retail_price_unit_of_measure
+      - disable_pos_sync
+      - primary_vendor_configuration
+      - country_of_origin
+      - sync_to_deli_scales
+    InvalidUnitOfMeasureError:
+      type: object
+      properties:
+        error_code:
+          type: string
+          enum:
+          - invalid_unit_of_measure
+      required:
+      - error_code
+    PrimaryVendorConfiguration:
+      type: string
+      enum:
+      - LATEST_COST
+      - SELECTED_BY_USER
+    NestedItemModifierDto:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          allOf:
+          - $ref: '#/components/schemas/ItemModifierType'
+        tax_behavior:
+          allOf:
+          - $ref: '#/components/schemas/ItemModifierTaxBehavior'
+        value:
+          type: string
+          pattern: ^[0-9]+(\.[0-9]+)?$
+          example: '199.99'
+      required:
+      - id
+      - name
+      - type
+      - tax_behavior
+      - value
+    StoreVendorProductIdentifierType:
+      type: string
+      enum:
+      - barcode
+      - description
+      - item_code
+    InvalidItemModifiersError:
+      type: object
+      properties:
+        error_code:
+          type: string
+          enum:
+          - invalid_item_modifiers
+      required:
+      - error_code
+    DuplicateBarcodeDetailDTO:
+      type: object
+      properties:
+        barcode:
+          type: string
+        barcode_type:
+          allOf:
+          - $ref: '#/components/schemas/BarcodeType'
+        store_product_id:
+          type: string
+      required:
+      - barcode
+      - barcode_type
+      - store_product_id
+    TaxRateType:
+      type: string
+      enum:
+      - amount
+      - percentage
+    DataFrameSortDirection:
+      type: string
+      enum:
+      - asc
+      - desc
+    NestedStoreVendorProductDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        uuid:
+          type: string
+          format: uuid
+        mutation_key:
+          type: string
+          format: uuid
+        store_product:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/NestedStoreProductDTO'
+        store_product_id:
+          type: string
+          nullable: true
+        store_id:
+          type: string
+          nullable: true
+        store_vendor:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/NestedStoreVendorDTO'
+        description:
+          type: string
+        barcode:
+          type: string
+          nullable: true
+        barcode_type:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/BarcodeType'
+        item_code:
+          type: string
+        case_size:
+          type: string
+          nullable: true
+          example: '199.99'
+          pattern: ^-?[0-9]+(\.[0-9]+)?$
+        each_cost:
+          type: string
+          nullable: true
+          example: '199.99'
+          pattern: ^-?[0-9]+(\.[0-9]+)?$
+        each_cost_start_time:
+          type: string
+          nullable: true
+          format: date-time
+        case_cost:
+          type: string
+          nullable: true
+          example: '199.99'
+          pattern: ^-?[0-9]+(\.[0-9]+)?$
+        case_cost_start_time:
+          type: string
+          nullable: true
+          format: date-time
+        lb_cost:
+          type: string
+          nullable: true
+          example: '199.99'
+          pattern: ^-?[0-9]+(\.[0-9]+)?$
+        lb_cost_start_time:
+          type: string
+          nullable: true
+          format: date-time
+        brand_name:
+          type: string
+          nullable: true
+        unit_volume:
+          type: string
+          nullable: true
+        is_order_primary:
+          type: boolean
+        purchase_order_uom_lock:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/PurchaseOrderLineItemUnitOfMeasure'
+      required:
+      - id
+      - created_at
+      - updated_at
+      - uuid
+      - mutation_key
+      - store_product
+      - store_product_id
+      - store_id
+      - store_vendor
+      - description
+      - barcode
+      - barcode_type
+      - item_code
+      - case_size
+      - each_cost
+      - each_cost_start_time
+      - case_cost
+      - case_cost_start_time
+      - lb_cost
+      - lb_cost_start_time
+      - brand_name
+      - unit_volume
+      - is_order_primary
+      - purchase_order_uom_lock
+    StoreProductHistoryDto:
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        updated_by_type:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/UpdatedByType'
+        updated_by_id:
+          type: string
+          nullable: true
+        updated_by_label:
+          type: string
+          nullable: true
+        changed_fields:
+          type: array
+          items:
+            type: string
+        before:
+          type: object
+          nullable: true
+        after:
+          type: object
+          nullable: true
+      required:
+      - id
+      - created_at
+      - updated_at
+      - updated_by_type
+      - updated_by_id
+      - updated_by_label
+      - changed_fields
+      - before
+      - after
+    ProcessedStoreProductRuleDto:
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        field_rules:
+          $ref: '#/components/schemas/FieldRulesDto'
+        rule_ids:
+          type: array
+          items:
+            type: string
+        store_product_id:
+          type: string
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/StoreProductRuleSummaryDto'
+      required:
+      - id
+      - created_at
+      - updated_at
+      - field_rules
+      - rule_ids
+      - store_product_id
+    PageMetaDto:
+      type: object
+      properties:
+        page:
+          type: number
+        take:
+          type: number
+        item_count:
+          type: number
+        page_count:
+          type: number
+        has_previous_page:
+          type: boolean
+        has_next_page:
+          type: boolean
+      required:
+      - page
+      - take
+      - item_count
+      - page_count
+      - has_previous_page
+      - has_next_page
+    NoBannerAssociationError:
+      type: object
+      properties:
+        error_code:
+          type: string
+          enum:
+          - no_banner_association
+      required:
+      - error_code
+    DuplicateBarcodeTypesForProductError:
+      type: object
+      properties:
+        error_code:
+          type: string
+          enum:
+          - duplicate_barcode_types_for_product
+        duplicates:
+          type: array
+          items:
+            $ref: '#/components/schemas/DuplicateBarcodeDetailDTO'
+      required:
+      - error_code
+      - duplicates
+    InvalidBarcodeError:
+      type: object
+      properties:
+        error_code:
+          type: string
+          enum:
+          - invalid_barcode
+      required:
+      - error_code
+    StoreProductRuleType:
+      type: string
+      enum:
+      - group
+      - standard
+    NestedStoreVendorDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        name:
+          type: string
+        code:
+          type: string
+          nullable: true
+      required:
+      - id
+      - created_at
+      - updated_at
+      - name
+      - code
+    StoreProductTypeaheadSearchPageDto:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/StoreProductTypeaheadSearchResultDto'
+        meta:
+          $ref: '#/components/schemas/PageMetaDto'
+      required:
+      - data
+      - meta
+    NestedStoreProductParDto:
+      type: object
+      properties:
+        manual_reorder_point:
+          type: string
+          nullable: true
+          example: '199.99'
+          pattern: ^-?[0-9]+(\.[0-9]+)?$
+        manual_max_stock:
+          type: string
+          nullable: true
+          example: '199.99'
+          pattern: ^-?[0-9]+(\.[0-9]+)?$
+      required:
+      - manual_reorder_point
+      - manual_max_stock
+    ItemModifierType:
+      type: string
+      enum:
+      - bottle_deposit
+      - custom
+      - food_modifier
+    DataFrameSortConfigDto:
+      type: object
+      properties:
+        colId:
+          type: string
+        sort:
+          allOf:
+          - $ref: '#/components/schemas/DataFrameSortDirection'
+        type:
+          type: string
+          description: AG Grid sort metadata accepted for compatibility.
+      required:
+      - colId
+      - sort
+    InvalidStoresError:
+      type: object
+      properties:
+        error_code:
+          type: string
+          enum:
+          - invalid_stores
+      required:
+      - error_code
+    ItemCodeIdentifierDto:
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/StoreVendorProductIdentifierType'
+        item_code:
+          type: string
+      required:
+      - type
+      - item_code
+    UpdateStoreProductDto:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        barcode:
+          type: string
+        disable_barcode_sanitization:
+          type: boolean
+          description: When true, the barcode is stored verbatim and the product's `barcode_type` is set to `Unsanitized`. When false, an existing `Unsanitized` product is re-sanitized on save. When omitted, the existing `barcode_type` is preserved (partial updates are safe).
+        department_id:
+          type: string
+          pattern: ^-?[0-9]+$
+        active:
+          type: boolean
+          default: true
+        retail_price:
+          type: string
+          nullable: true
+          format: positive-monetary
+          pattern: ^[0-9]+(\.[0-9]+)?$
+          example: '199.99'
+        minimum_retail_price:
+          type: string
+          nullable: true
+          format: positive-monetary
+          pattern: ^[0-9]+(\.[0-9]+)?$
+          example: '199.99'
+        maximum_retail_price:
+          type: string
+          nullable: true
+          format: positive-monetary
+          pattern: ^[0-9]+(\.[0-9]+)?$
+          example: '199.99'
+        retail_price_source:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/StoreProductPriceSource'
+        retail_price_source_platform:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/StoreProductPriceSourcePlatform'
+        retail_price_input_method:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/StoreProductPriceInputMethod'
+        retail_price_unit_of_measure_id:
+          type: string
+          nullable: true
+          pattern: ^-?[0-9]+$
+        brand:
+          type: string
+          nullable: true
+        target_margin:
+          type: number
+          nullable: true
+        case_size:
+          type: integer
+          nullable: true
+        pack_size:
+          type: integer
+          nullable: true
+        min_customer_age:
+          type: integer
+        loyalty_points_per_dollar:
+          type: string
+          nullable: true
+          pattern: ^[0-9]+(\.[0-9]+)?$
+          example: '199.99'
+        unit_volume_quantity:
+          type: string
+          nullable: true
+          pattern: ^[0-9]+(\.[0-9]+)?$
+          example: '199.99'
+        unit_volume_uom_name:
+          type: string
+          nullable: true
+        wic_enabled:
+          type: boolean
+          default: false
+        wic_override_plu:
+          type: string
+          nullable: true
+        snap_enabled:
+          type: boolean
+          default: false
+        ebt_enabled:
+          type: boolean
+          default: false
+        is_tippable:
+          type: boolean
+          default: false
+        is_blackhawk_gift_card:
+          type: boolean
+          default: false
+        is_reloadable_blackhawk_gift_card:
+          type: boolean
+          default: false
+        print_physical_tag:
+          type: boolean
+          default: false
+        ecommerce_enabled:
+          type: boolean
+          default: false
+        variable_sale_price:
+          type: boolean
+          default: false
+        sold_by_weight:
+          type: boolean
+          default: false
+        prompt_for_quantity:
+          type: boolean
+          default: false
+        manual_item:
+          type: boolean
+          default: false
+        tax_rate_ids:
+          type: array
+          items:
+            type: string
+            pattern: ^-?[0-9]+$
+        variable_weight_ids:
+          type: array
+          items:
+            type: string
+            pattern: ^-?[0-9]+$
+        item_modifier_ids:
+          type: array
+          items:
+            type: string
+            pattern: ^-?[0-9]+$
+        food_modifier_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        country_of_origin:
+          type: string
+          nullable: true
+          maxLength: 3
+          minLength: 3
+        store_vendor_products:
+          type: array
+          items:
+            $ref: '#/components/schemas/NestedSetStoreVendorProductDto'
+        primary_vendor_configuration:
+          allOf:
+          - $ref: '#/components/schemas/PrimaryVendorConfiguration'
+        sync_to_deli_scales:
+          type: boolean
+          default: false
+        alcohol_by_volume:
+          type: string
+          nullable: true
+          pattern: ^[0-9]+(\.[0-9]+)?$
+          example: '199.99'
+        notes:
+          type: string
+          nullable: true
+        ingredients:
+          type: string
+          nullable: true
+        shelf_life_days:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 999
+          description: Shelf life in days sent to deli scales (Hobart, eplum, Ishida); the scale computes the sell-by date from it. 1-999, or null for no Vori-managed shelf life.
+        last_printed_at:
+          type: string
+          nullable: true
+          format: date-time
+        snap_incentive_earnable:
+          type: boolean
+          default: false
+        snap_incentive_redeemable:
+          type: boolean
+          default: false
+        discount_restrictions:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/DiscountRestriction'
+        store_product_group_rule_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        active_store_vendor_product_id:
+          type: string
+          pattern: ^-?[0-9]+$
+    InvalidVariableWeightsError:
+      type: object
+      properties:
+        error_code:
+          type: string
+          enum:
+          - invalid_variable_weights
+      required:
+      - error_code
+    InventoryChangeSourceType:
+      type: string
+      enum:
+      - CLEAR_ON_ORDER
+      - DASH_PRODUCT_DETAILS
+      - DASHBOARD_INVENTORY_PAGE
+      - HANDHELD_INVENTORY_COUNT
+      - HANDHELD_INVENTORY_MANUAL
+      - HANDHELD_INVENTORY_RESTOCK
+      - HANDHELD_INVENTORY_SHRINK
+      - HANDHELD_ORDERING_COUNT
+      - HANDHELD_PRODUCT_MANUAL
+      - INVENTORY_RECOUNT
+      - INVENTORY_UPLOAD
+      - INVOICE_SHIPPED_QTY
+      - ONBOARDING_APL_IMPORT
+      - POS_REFUND
+      - POS_SALE
+      - PURCHASE_ORDER
+      - RDS_IMPORT
+      - STORE_TRANSFER
+    TagTemplateAssignmentDto:
+      type: object
+      properties:
+        tag_template_type:
+          type: string
+        tag_template_id:
+          type: string
+      required:
+      - tag_template_type
+      - tag_template_id
+    Resource:
+      type: string
+      enum:
+      - '*'
+      - accounting_integration
+      - agent_chats
+      - asynchronous_tasks
+      - banners
+      - blackhawk_transactions
+      - capabilities
+      - coupons
+      - custom_quick_actions
+      - datacap_transactions
+      - departments
+      - discounts
+      - ditto_auth_tokens
+      - edge_agents
+      - electronic_shelf_labels
+      - employees
+      - files
+      - food_modifiers
+      - gift_cards
+      - gl_code_mappings
+      - house_accounts
+      - inventory
+      - inventory_sessions
+      - invoices
+      - item_modifiers
+      - label_dimension_sets
+      - label_sheet_profiles
+      - label_stock_products
+      - lanes
+      - loyalty_bonuses
+      - loyalty_campaigns
+      - loyalty_rewards
+      - notification_templates
+      - offers
+      - order_guides
+      - pos_banner_configurations
+      - pos_orders
+      - pos_tills
+      - price_tags
+      - product_ranges
+      - products
+      - promotions
+      - purchase_orders
+      - receiving
+      - reporting
+      - revision_sessions
+      - revisions
+      - roles
+      - shopper_tags
+      - shoppers
+      - store_product_inventory_counts
+      - store_product_rules
+      - store_product_tag_templates
+      - store_snap_incentive_program_coupons
+      - store_vendor_merge_requests
+      - store_vendor_product_merge_requests
+      - store_vendor_products
+      - store_vendors
+      - stores
+      - tag_printings
+      - tag_template_presets
+      - tag_templates
+      - tax_rates
+      - users
+      - variable_weights
+      - vendor_merge_requests
+      - vendor_product_merge_requests
+      - vendors
+      - wallet_payments
+      - wic_products
+    TargetValuesPropertiesDto:
+      type: object
+      properties:
+        name:
+          type: string
+        pack_size:
+          type: integer
+          nullable: true
+        unit_volume_string:
+          type: string
+          nullable: true
+        unit_volume_uom_name:
+          type: string
+          nullable: true
+        unit_of_measure_amount:
+          type: string
+          nullable: true
+          pattern: ^[0-9]+(\.[0-9]+)?$
+          example: '199.99'
+        target_margin:
+          type: string
+          nullable: true
+          pattern: ^[0-9]+(\.[0-9]+)?$
+          example: '199.99'
+        country_of_origin:
+          type: string
+          nullable: true
+          maxLength: 3
+          minLength: 3
+        loyalty_points_per_dollar:
+          type: string
+          nullable: true
+          pattern: ^[0-9]+(\.[0-9]+)?$
+          example: '199.99'
+        store_department_id:
+          type: string
+          nullable: true
+        min_customer_age:
+          type: integer
+          nullable: true
+        ebt_enabled:
+          type: boolean
+        ecommerce_enabled:
+          type: boolean
+        prompt_for_quantity:
+          type: boolean
+        variable_sale_price:
+          type: boolean
+        is_tippable:
+          type: boolean
+        manual_item:
+          type: boolean
+        brand_string:
+          type: string
+          nullable: true
+        base_retail_price:
+          type: string
+          nullable: true
+          pattern: ^[0-9]+(\.[0-9]+)?$
+          example: '199.99'
+        print_physical_tag:
+          type: boolean
+        sync_to_deli_scales:
+          type: boolean
+        retail_price_uom_id:
+          type: string
+          nullable: true
+        wic_override_plu:
+          type: string
+          nullable: true
+        is_blackhawk_gift_card:
+          type: boolean
+        snap_incentive_earnable:
+          type: boolean
+        snap_incentive_redeemable:
+          type: boolean
+        shelf_life_days:
+          type: integer
+          nullable: true
+        discount_restrictions:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/DiscountRestriction'
+        tax_rate_ids:
+          type: array
+          items:
+            type: string
+        variable_weight_ids:
+          type: array
+          items:
+            type: string
+        item_modifier_ids:
+          type: array
+          items:
+            type: string
+        food_modifier_ids:
+          type: array
+          items:
+            type: string
+        tag_templates:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagTemplateAssignmentDto'
+    Action:
+      type: string
+      enum:
+      - '*'
+      - cancel
+      - check_in
+      - create
+      - delete
+      - read
+      - record_events
+      - refund
+      - restart
+      - update
+      - void
+    DuplicateBarcodesError:
+      type: object
+      properties:
+        error_code:
+          type: string
+          enum:
+          - duplicate_barcodes
+        duplicates:
+          type: array
+          items:
+            $ref: '#/components/schemas/DuplicateBarcodeDetailDTO'
+      required:
+      - error_code
+      - duplicates
+    StoreProductTypeaheadSearchResultDto:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        barcode:
+          type: string
+        department:
+          $ref: '#/components/schemas/NestedStoreDepartmentDto'
+        active:
+          type: boolean
+        store_id:
+          type: string
+        base_retail_price:
+          type: string
+          nullable: true
+          format: positive-monetary
+          pattern: ^[0-9]+(\.[0-9]+)?$
+          example: '199.99'
+        brand:
+          type: string
+          nullable: true
+        target_margin:
+          type: string
+          nullable: true
+          pattern: ^[0-9]+(\.[0-9]+)?$
+          example: '199.99'
+        case_size:
+          type: integer
+          nullable: true
+        unit_volume:
+          type: string
+          nullable: true
+        sold_by:
+          type: string
+          nullable: true
+        barcodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NestedStoreProductBarcode'
+      required:
+      - id
+      - name
+      - barcode
+      - department
+      - active
+      - store_id
+      - base_retail_price
+      - brand
+      - target_margin
+      - case_size
+      - unit_volume
+      - sold_by
+      - barcodes
+    StoreProductPriceSourcePlatform:
+      type: string
+      enum:
+      - API
+      - CDC_PIPELINE
+      - CLI
+      - MOBILE
+      - WEB
+    PurchaseOrderLineItemUnitOfMeasure:
+      type: string
+      enum:
+      - CASE
+      - EACH
+      - LB
+    StoreProductPriceSource:
+      type: string
+      enum:
+      - ACCEPTED_COST_CHANGE
+      - BULK_UPDATE
+      - COST_FILE_IMPORT
+      - PRODUCT_DETAILS
+      - PRODUCT_RULES
+    BarcodeType:
+      type: string
+      enum:
+      - EAN 13 Type 2 Without Check Digit
+      - EAN-13
+      - EAN-13 Without Check Digit
+      - EAN-14
+      - EAN-14 Without Check Digit
+      - EAN-8
+      - EAN-8 Without Check Digit
+      - PLU
+      - PRODUCE PLU
+      - Type 2 EAN
+      - Type 2 UPC
+      - Unsanitized
+      - UPC Shipping Container
+      - UPC-A
+      - UPC-A Type 2 Without Check Digit
+      - UPC-A Without Check Digit
+      - UPC-E
+      - UPC-E Without Check Digit
+    UnitOfMeasureDto:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+      required:
+      - id
+      - name
+      - description
+    InsufficientPermissionsErrorDetails:
+      type: object
+      properties:
+        resource:
+          allOf:
+          - $ref: '#/components/schemas/Resource'
+        action:
+          allOf:
+          - $ref: '#/components/schemas/Action'
+      required:
+      - resource
+      - action
+    NestedSetStoreVendorProductDto:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        mutationKey:
+          type: string
+          format: uuid
+        storeVendorID:
+          type: string
+          pattern: ^[0-9]+$
+        storeProductID:
+          type: string
+          nullable: true
+          pattern: ^[0-9]+$
+        parentProductID:
+          type: string
+          nullable: true
+          pattern: ^[0-9]+$
+        itemCode:
+          type: string
+        unitUPC:
+          type: string
+          nullable: true
+        caseUPC:
+          type: string
+          nullable: true
+        packUPC:
+          type: string
+          nullable: true
+        caseSize:
+          type: number
+          nullable: true
+        barcode:
+          type: string
+          nullable: true
+        description:
+          type: string
+        brandName:
+          type: string
+          nullable: true
+        unitVolume:
+          type: string
+          nullable: true
+        caseSizeDecimal:
+          type: string
+          minimum: 0
+          nullable: true
+          deprecated: true
+          example: '199.99'
+          pattern: ^-?[0-9]+(\.[0-9]+)?$
+        caseCost:
+          type: string
+          minimum: 0
+          nullable: true
+          example: '199.99'
+          pattern: ^-?[0-9]+(\.[0-9]+)?$
+        eachCost:
+          type: string
+          minimum: 0
+          nullable: true
+          example: '199.99'
+          pattern: ^-?[0-9]+(\.[0-9]+)?$
+        lbCost:
+          type: string
+          minimum: 0
+          nullable: true
+          example: '199.99'
+          pattern: ^-?[0-9]+(\.[0-9]+)?$
+        costStartTime:
+          type: string
+          nullable: true
+          format: date-time
+        isOrderPrimary:
+          type: boolean
+        isPricingEligible:
+          type: boolean
+        purchaseOrderUOMLock:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/PurchaseOrderLineItemUnitOfMeasure'
+        alternateIdentifiers:
+          type: array
+          items:
+            anyOf:
+            - $ref: '#/components/schemas/DescriptionIdentifierDto'
+            - $ref: '#/components/schemas/BarcodeIdentifierDto'
+            - $ref: '#/components/schemas/ItemCodeIdentifierDto'
+        id:
+          type: string
+          pattern: ^[0-9]+$
+      required:
+      - storeVendorID
+    CreateStoreProductWrapperDto:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/CreateStoreProductDto'
+      required:
+      - data
+    TargetValuesDto:
+      type: object
+      properties:
+        properties:
+          $ref: '#/components/schemas/TargetValuesPropertiesDto'
+      required:
+      - properties
+    NestedFoodModifierCategoryDto:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          description: Category name
+        priority:
+          type: integer
+          description: Display priority (lower = shown first)
+        min_selection:
+          type: integer
+          description: Minimum number of options customer must select (0 = no minimum)
+        max_selection:
+          type: integer
+          description: Maximum number of options customer can select
+          nullable: true
+        modifiers:
+          description: Modifiers assigned to this product in this category
+          type: array
+          items:
+            $ref: '#/components/schemas/FoodModifierDto'
+      required:
+      - id
+      - name
+      - priority
+      - min_selection
+      - max_selection
+      - modifiers
+    FieldRulesDto:
+      type: object
+      properties: {}
+    NestedStoreDepartmentDto:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+      required:
+      - id
+      - name
+    BarcodeIdentifierDto:
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/StoreVendorProductIdentifierType'
+        barcode:
+          type: string
+      required:
+      - type
+      - barcode
+    DiscountRestriction:
+      type: string
+      enum:
+      - NO_DISCOUNT_WHEN_ON_PROMOTION
+      - NO_DISCOUNTING
+      - NO_DOUBLE_DISCOUNTING
+    SalesReportingType:
+      type: string
+      enum:
+      - individual
+      - individual_sum
+    InvalidTaxRatesError:
+      type: object
+      properties:
+        error_code:
+          type: string
+          enum:
+          - invalid_tax_rates
+      required:
+      - error_code
+    VariableWeightUnit:
+      type: string
+      enum:
+      - LBS
+      - OZ
+    PriceTagModifier:
+      type: string
+      enum:
+      - BOTTLE_DEPOSIT
+      - CRV
+    StoreProductRuleStatus:
+      type: string
+      enum:
+      - active
+      - inactive
+    TaxType:
+      type: string
+      enum:
+      - other
+      - sales
+    FoodModifierDto:
+      type: object
+      properties:
+        id:
+          type: string
+        priority:
+          type: integer
+          description: Display priority (lower = shown first)
+        item_modifier:
+          description: Item modifier data
+          allOf:
+          - $ref: '#/components/schemas/ItemModifierDto'
+      required:
+      - id
+      - priority
+      - item_modifier
+    StoreProductPriceInputMethod:
+      type: string
+      enum:
+      - COST_FILE
+      - MANUALLY_ENTERED_PRICE
+      - USED_SUGGESTED_PRICE
+    NestedStoreProductBarcode:
+      type: object
+      properties:
+        barcode:
+          type: string
+        barcode_type:
+          allOf:
+          - $ref: '#/components/schemas/BarcodeType'
+      required:
+      - barcode
+      - barcode_type
+    InvalidFoodModifiersError:
+      type: object
+      properties:
+        error_code:
+          type: string
+          enum:
+          - invalid_food_modifiers
+      required:
+      - error_code
+    ListStoreProductHistoryDto:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/StoreProductHistoryDto'
+        rowCount:
+          type: integer
+      required:
+      - data
+      - rowCount
+    UnsupportedStateFieldError:
+      type: object
+      properties:
+        error_code:
+          type: string
+          enum:
+          - unsupported_state_field
+      required:
+      - error_code
+    NestedStoreProductDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        name:
+          type: string
+        primaryVendorConfiguration:
+          allOf:
+          - $ref: '#/components/schemas/PrimaryVendorConfiguration'
+        barcode:
+          type: string
+      required:
+      - id
+      - created_at
+      - updated_at
+      - name
+      - primaryVendorConfiguration
+      - barcode
+    InvalidDepartmentError:
+      type: object
+      properties:
+        error_code:
+          type: string
+          enum:
+          - invalid_department
+      required:
+      - error_code
+    InsufficientPermissionsError:
+      type: object
+      properties:
+        error_code:
+          type: string
+          enum:
+          - insufficient_permissions
+        error_details:
+          $ref: '#/components/schemas/InsufficientPermissionsErrorDetails'
+      required:
+      - error_code
+      - error_details
+    ItemModifierDto:
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        name:
+          type: string
+        type:
+          allOf:
+          - $ref: '#/components/schemas/ItemModifierType'
+        taxBehavior:
+          allOf:
+          - $ref: '#/components/schemas/ItemModifierTaxBehavior'
+        value:
+          type: string
+          pattern: ^[0-9]+(\.[0-9]+)?$
+          example: '199.99'
+        priceTagModifier:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/PriceTagModifier'
+      required:
+      - id
+      - created_at
+      - updated_at
+      - name
+      - type
+      - taxBehavior
+      - value
+      - priceTagModifier
+    NestedVariableWeightDto:
+      type: object
+      properties:
+        id:
+          type: string
+          nullable: true
+        name:
+          type: string
+        unit:
+          allOf:
+          - $ref: '#/components/schemas/VariableWeightUnit'
+        value:
+          type: string
+          pattern: ^[0-9]+(\.[0-9]+)?$
+          example: '199.99'
+      required:
+      - id
+      - name
+      - unit
+      - value
+  securitySchemes:
+    bearer:
+      scheme: bearer
+      bearerFormat: JWT
+      type: http
