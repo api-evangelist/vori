@@ -1,0 +1,47 @@
+generated: '2026-07-21'
+method: derived
+source: openapi/vori-openapi.yml
+docs: https://help.vori.com/api/models/store-product
+notation: >-
+  relationships use has_one / has_many / belongs_to with the foreign-key or
+  nested field name; direction is from the entity that owns the reference.
+description: >-
+  Entity-relationship graph behind the Vori Store Products API, derived from
+  the schema $ref links and id-reference fields in the harvested OpenAPI
+  (StoreProductDto and its nested DTOs). Ids are UUID strings without
+  entity-specific prefixes.
+
+entities:
+  - {name: StoreProduct, domain: catalog, description: A product in a store's catalog — pricing, barcodes, tax, modifiers, vendor and inventory configuration.}
+  - {name: Store, domain: org, description: A grocery store; products belong to a store (store_id) and users are scoped by banner.}
+  - {name: StoreDepartment, domain: catalog, description: Department a product is merchandised under.}
+  - {name: TaxRate, domain: pricing, description: Tax rate applied to a product (TaxRateType/TaxType).}
+  - {name: ItemModifier, domain: catalog, description: Item-level modifier with tax behavior.}
+  - {name: FoodModifierCategory, domain: catalog, description: Food-modifier category grouping FoodModifiers.}
+  - {name: StoreProductBarcode, domain: catalog, description: Additional barcode attached to a product (BarcodeType).}
+  - {name: VariableWeight, domain: catalog, description: Variable-weight configuration for weighed items.}
+  - {name: StoreVendor, domain: supply, description: A vendor supplying the store.}
+  - {name: StoreVendorProduct, domain: supply, description: A vendor's offering of a product (case cost, pack size); one may be the active vendor product.}
+  - {name: StoreProductInventory, domain: inventory, description: On-hand inventory state for a store product.}
+  - {name: UnitOfMeasure, domain: catalog, description: Unit of measure used for retail pricing and unit volume.}
+  - {name: DiscountRestriction, domain: pricing, description: Restriction on which discounts may apply to a product.}
+  - {name: ProcessedStoreProductRule, domain: pricing, description: Result of product-group pricing rules processed against a store product.}
+  - {name: StoreProductHistory, domain: audit, description: Change-history record for a store product.}
+
+relationships:
+  - {from: StoreProduct, to: Store, type: belongs_to, via: store_id}
+  - {from: StoreProduct, to: StoreDepartment, type: belongs_to, via: department_id}
+  - {from: StoreProduct, to: TaxRate, type: has_many, via: tax_rates}
+  - {from: StoreProduct, to: ItemModifier, type: has_many, via: item_modifiers}
+  - {from: StoreProduct, to: FoodModifierCategory, type: has_many, via: food_modifier_categories}
+  - {from: StoreProduct, to: StoreProductBarcode, type: has_many, via: additional_barcodes}
+  - {from: StoreProduct, to: VariableWeight, type: has_many, via: variable_weights}
+  - {from: StoreProduct, to: StoreVendor, type: has_one, via: active_vendor}
+  - {from: StoreProduct, to: StoreVendorProduct, type: has_one, via: active_vendor_product}
+  - {from: StoreProduct, to: StoreVendorProduct, type: has_many, via: store_vendor_products}
+  - {from: StoreProduct, to: StoreProductInventory, type: has_one, via: inventory}
+  - {from: StoreProduct, to: UnitOfMeasure, type: has_one, via: retail_price_unit_of_measure}
+  - {from: StoreProduct, to: DiscountRestriction, type: has_many, via: discount_restrictions}
+  - {from: ProcessedStoreProductRule, to: StoreProduct, type: belongs_to, via: store_product_id}
+  - {from: StoreProductHistory, to: StoreProduct, type: belongs_to, via: store_product_id}
+  - {from: StoreVendorProduct, to: StoreVendor, type: belongs_to, via: store_vendor_id}

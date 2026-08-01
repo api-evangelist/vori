@@ -1,0 +1,46 @@
+generated: '2026-07-21'
+method: derived
+status: candidate
+source: openapi/vori-openapi.yml
+description: >-
+  Vori publishes no official hosted MCP server for its REST API. The voriteam
+  GitHub org does ship MCP tooling (ditto-mcp — an MCP server for the Ditto HTTP
+  API, cube-mcp, and a fork of mcp-front auth proxy), which shows internal MCP
+  adoption, but none of it exposes api.vori.com. This is a candidate tool list
+  derived one-to-one from the OpenAPI operations.
+server:
+  name: vori
+  transport: http
+tools:
+  - name: list_store_products
+    description: Lists store products; filter, sort, and paginate with the state parameter
+    source_operation: openapi/vori-openapi.yml#listStoreProducts
+  - name: get_store_product
+    description: Get a single store product by id
+    source_operation: openapi/vori-openapi.yml#getStoreProduct
+  - name: create_store_product
+    description: Create a store product
+    source_operation: openapi/vori-openapi.yml#createStoreProduct
+  - name: update_store_product
+    description: Update a store product
+    source_operation: openapi/vori-openapi.yml#updateStoreProduct
+  - name: restore_store_product
+    description: Restore a soft-deleted store product
+    source_operation: openapi/vori-openapi.yml#restoreStoreProduct
+  - name: search_store_products
+    description: Fast full-text product search (Algolia-indexed)
+    source_operation: openapi/vori-openapi.yml#searchStoreProducts
+  - name: list_store_product_history
+    description: Retrieve change history for a specific store product
+    source_operation: openapi/vori-openapi.yml#listStoreProductHistory
+  - name: list_processed_store_product_rules
+    description: List processed store product rules
+    source_operation: openapi/vori-openapi.yml#listProcessedStoreProductRules
+  - name: get_processed_store_product_rule
+    description: Get processed rules for a store product
+    source_operation: openapi/vori-openapi.yml#getProcessedStoreProductRule
+first_party_mcp_activity:
+  - repo: https://github.com/voriteam/ditto-mcp
+    note: MCP server for the Ditto HTTP API (Go) — not the Vori REST API
+  - repo: https://github.com/voriteam/cube-mcp
+    note: Go MCP project

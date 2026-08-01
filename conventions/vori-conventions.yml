@@ -1,0 +1,68 @@
+generated: '2026-07-21'
+method: searched
+source: https://help.vori.com/api/introduction
+description: >-
+  Cross-cutting request/response semantics of the Vori REST API (api.vori.com),
+  captured from the published API introduction and the harvested OpenAPI. Vori
+  documents no idempotency contract, so no Idempotency pointer is emitted.
+base_url: https://api.vori.com
+api_style: REST over HTTPS, JSON requests and responses
+
+authentication:
+  scheme: Bearer JWT in the Authorization header
+  token_source: >-
+    Exchange Vori login email/password at Google Identity Toolkit
+    (identitytoolkit verifyPassword) for an idToken; refresh hourly via
+    securetoken.googleapis.com using the returned refreshToken.
+  least_privilege: >-
+    Docs recommend a banner-level Read-only role account for read-only
+    integrations to limit blast radius.
+  docs: https://help.vori.com/api/introduction
+  detail: authentication/vori-authentication.yml
+
+idempotency:
+  supported: false
+  note: No idempotency-key header or retry-safety contract documented.
+
+pagination:
+  style: rows-window (AG-Grid-style state object)
+  request_params:
+    state: >-
+      URL-encoded JSON object; only startRow, endRow, filterModel, and sortModel
+      are accepted — any other property is rejected with a 400.
+    startRow: defaults to 0
+    endRow: defaults to startRow + 10; endRow - startRow <= 1000
+  response_fields:
+    rowCount: total matching rows across the entire result set
+  docs: https://help.vori.com/api/introduction
+
+filtering:
+  mechanism: state.filterModel keyed by field name
+  filter_types:
+    set: [in, notIn]
+    boolean: [in, notIn]
+    text: [equals, notEqual, contains, notContains, startsWith, endsWith, blank, notBlank]
+    number: [equals, notEqual, lessThan, lessThanOrEqual, greaterThan, greaterThanOrEqual, inRange, blank, notBlank]
+    date: [equals, notEqual, lessThan, greaterThan, inRange, blank, notBlank]
+  note: Filterable fields and supported filter types vary by endpoint; datetime is accepted for date fields.
+
+sorting:
+  mechanism: 'state.sortModel — [{colId, sort: asc|desc}]'
+  default: created_at descending (newest first)
+
+error_envelope:
+  shape: Typed JSON error DTOs per failure (no RFC 9457 problem+json)
+  validation_errors: 400 responses name the unsupported/invalid field
+  authorization_errors: 403 InsufficientPermissionsError / NoBannerAssociationError
+  detail: errors/vori-problem-types.yml
+
+versioning:
+  scheme: uri-path (/v1/)
+  detail: lifecycle/vori-lifecycle.yml
+
+rate_limits:
+  documented: false
+  note: No rate-limit signaling or quota documentation found in the public docs.
+
+request_tracing:
+  documented: false

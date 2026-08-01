@@ -1,0 +1,41 @@
+generated: '2026-07-21'
+method: searched
+source: https://github.com/voriteam + https://registry.npmjs.org
+description: >-
+  First-party packages published by Vori (GitHub org voriteam, npm scope @vori).
+  Vori ships no client SDK for its REST API (api.vori.com) — the published
+  packages are VoriPOS in-store tooling distributed via a Homebrew tap, and
+  internal-infrastructure NestJS modules on npm. Recorded honestly: none of
+  these are API client libraries, so no SDKs pointer is emitted.
+packages:
+  - language: shell
+    registry: homebrew
+    name: voriteam/voripos
+    url: https://github.com/voriteam/homebrew-voripos
+    install: brew tap voriteam/voripos
+    official: true
+    note: >-
+      Homebrew tap for VoriPOS store tooling. Formulas: voripos-provision
+      (provisioning tool), voripos-txn-sync (transaction data sync),
+      voripos-otel-collector (OpenTelemetry collector), voripos-internet-sharing,
+      otelcol-contrib.
+  - language: typescript
+    registry: npm
+    name: "@vori/nest-schematics"
+    url: https://www.npmjs.com/package/@vori/nest-schematics
+    source: https://github.com/voriteam/nest-schematics
+    install: npm install @vori/nest-schematics
+    official: true
+    note: NestJS architecture schematics (engineering tooling, not an API client).
+  - language: typescript
+    registry: npm
+    name: "@vori/nestjs-secret-manager"
+    url: https://www.npmjs.com/package/@vori/nestjs-secret-manager
+    source: https://github.com/voriteam/nestjs-secret-manager
+    install: npm install @vori/nestjs-secret-manager
+    official: true
+    note: NestJS secret-management module (engineering tooling, not an API client).
+registries_probed:
+  - npm (registry.npmjs.org search "vori" — only the two @vori scoped packages are first-party)
+  - homebrew (github.com/voriteam/homebrew-voripos)
+  - pypi, maven-central, nuget, pkg.go.dev, rubygems, packagist, crates.io (no first-party packages found)

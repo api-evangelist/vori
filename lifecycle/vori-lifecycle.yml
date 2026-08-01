@@ -1,0 +1,26 @@
+generated: '2026-07-21'
+method: derived
+source: openapi/vori-openapi.yml + https://help.vori.com/api/introduction
+description: >-
+  Lifecycle posture for the Vori REST API. Versioning is derivable from the
+  URI paths; Vori publishes no deprecation policy, SLA, or status page
+  (status.vori.com does not resolve — probed 2026-07-21), so those are
+  honestly recorded as absent and no StatusPage/Deprecation pointers are emitted.
+versioning:
+  scheme: uri-path
+  current: v1
+  evidence: All operations live under /v1/ (e.g. /v1/store-products).
+deprecation:
+  policy_url: null
+  sunset_header: null
+  note: No published deprecation policy or RFC 8594 Sunset-header support found.
+sla:
+  url: null
+status_page: null
+token_lifecycle:
+  note: >-
+    Bearer tokens (Firebase idToken) expire after one hour; the docs direct
+    integrations to exchange the refresh token at
+    securetoken.googleapis.com/v1/token rather than re-authenticating, and warn
+    the refresh token may be rotated on each exchange.
+deprecated_operations: []

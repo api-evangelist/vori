@@ -1,0 +1,42 @@
+generated: '2026-07-21'
+method: searched
+description: >-
+  Probe of the /.well-known/ discovery surface on Vori's website and API hosts.
+  No well-known documents are published; both hosts return 404 for every probed
+  path. Vori does publish llms.txt at the site root of both www.vori.com and
+  help.vori.com (captured verbatim in llms/). HTTP status recorded at probe time.
+hosts:
+  - host: https://www.vori.com
+    documents:
+      - path: /.well-known/security.txt
+        status: 404
+      - path: /.well-known/openid-configuration
+        status: 404
+      - path: /.well-known/oauth-authorization-server
+        status: 404
+      - path: /.well-known/api-catalog
+        status: 404
+      - path: /.well-known/ai-plugin.json
+        status: 404
+      - path: /llms.txt
+        status: 200
+        file: ../llms/vori-www-llms.txt
+        note: not a /.well-known/ path; recorded here for discovery completeness
+  - host: https://api.vori.com
+    documents:
+      - path: /.well-known/security.txt
+        status: 404
+      - path: /.well-known/openid-configuration
+        status: 404
+      - path: /.well-known/oauth-authorization-server
+        status: 404
+      - path: /.well-known/api-catalog
+        status: 404
+      - path: /.well-known/ai-plugin.json
+        status: 404
+  - host: https://help.vori.com
+    documents:
+      - path: /llms.txt
+        status: 200
+        file: ../llms/vori-llms.txt
+        note: not a /.well-known/ path; Mintlify docs index, captured verbatim

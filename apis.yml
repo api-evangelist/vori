@@ -1,22 +1,58 @@
 aid: vori
 name: Vori
-description: 'Vori is a company surfaced as a portfolio company of greylock and added to the API Evangelist
-  network as a stub for enrichment. Sector: applications. This profile is a lead awaiting the enrichment
-  pipeline.'
+description: >-
+  Vori is a connected point-of-sale and operations platform built exclusively
+  for independent grocery stores, unifying checkout, payments (EBT, eWIC,
+  contactless, gift cards), loyalty and SMS marketing, ordering, receiving,
+  invoice processing, inventory, pricing automation, and reporting in one
+  system. The Vori REST API at api.vori.com lets grocers and their integrations
+  read and manage store catalog data — store products, pricing rules, product
+  history, and search — using bearer-token authentication.
 url: https://raw.githubusercontent.com/api-evangelist/vori/refs/heads/main/apis.yml
+accessModel:
+  pricing: unknown
+  onboarding: self-serve
+  trial: false
+  try_now: false
+  public: false
+  label: Self-serve signup
+  confidence: medium
+  source:
+  - authentication
+  generated: '2026-07-22'
+  method: derived
+image: https://cdn.prod.website-files.com/696a48a7323254ea5a7ab884/696a48a7323254ea5a7ab8c0_logo.png
 x-type: company
 x-source: vc-portfolio
 x-backed-by:
 - greylock
-x-tier: stub
-x-tier-reason: portfolio-lead
+x-tier: profile
+x-tier-reason: public REST API with published reference at help.vori.com
 specificationVersion: '0.20'
 created: '2026-07-17'
-modified: '2026-07-17'
+modified: '2026-07-21'
 tags:
 - Company
 - Applications
-apis: []
+- Grocery
+- Point of Sale
+- Retail
+- Inventory
+- Payments
+- Commerce
+apis:
+- aid: vori:vori-store-products-api
+  name: Vori Store products API
+  description: The Store products API from Vori — 7 operation(s) for store products.
+  humanURL: https://help.vori.com/api/introduction
+  baseURL: https://api.vori.com
+  tags:
+  - Store products
+  properties:
+  - type: OpenAPI
+    url: openapi/vori-store-products-api-openapi.yml
+  - type: Documentation
+    url: https://help.vori.com/api/introduction
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
@@ -25,3 +61,52 @@ maintainers:
 common:
 - type: Website
   url: https://www.vori.com
+- type: Documentation
+  url: https://help.vori.com/
+- type: APIReference
+  url: https://help.vori.com/api-reference/store-products/list-store-products
+- type: GettingStarted
+  url: https://help.vori.com/api/introduction
+- type: Support
+  url: https://help.vori.com/
+- type: Blog
+  url: https://www.vori.com/blog
+- type: GitHubOrganization
+  url: https://github.com/voriteam
+- type: Login
+  url: https://app.vori.com
+- type: TermsOfService
+  url: https://www.vori.com/tos
+- type: PrivacyPolicy
+  url: https://www.vori.com/privacy
+- type: Authentication
+  url: authentication/vori-authentication.yml
+- type: DomainSecurity
+  url: security/vori-domain-security.yml
+- type: AgenticAccess
+  url: agentic-access/vori-agentic-access.yml
+- type: Packages
+  url: packages/vori-packages.yml
+- type: MCPServer
+  url: mcp/vori-mcp.yml
+- type: LLMsTxt
+  url: llms/vori-llms.txt
+- type: Overlay
+  url: overlays/vori-store-products-overlay.yaml
+- type: Conformance
+  url: conformance/vori-conformance.yml
+- type: ErrorCatalog
+  url: errors/vori-problem-types.yml
+- type: Lifecycle
+  url: lifecycle/vori-lifecycle.yml
+- type: Conventions
+  url: conventions/vori-conventions.yml
+- type: DataModel
+  url: data-model/vori-data-model.yml
+- type: AgentSkill
+  url: skills/_index.yml
+x-enrichment:
+  date: '2026-07-21'
+  status: enriched
+  artifacts_added: 18
+  pass: local-v1

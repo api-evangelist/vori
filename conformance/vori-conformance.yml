@@ -1,0 +1,45 @@
+generated: '2026-07-21'
+method: derived
+source: openapi/vori-openapi.yml + https://help.vori.com/api/introduction
+description: >-
+  Cross-cutting standards conformance for the Vori REST API (api.vori.com),
+  derived from the harvested OpenAPI and the published API introduction. Vori
+  publishes no formal compliance/certification program page, so no Compliance
+  pointer is emitted.
+standards:
+  - id: oauth2
+    conforms: false
+    evidence: >-
+      Auth is a bearer JWT obtained by exchanging Vori login credentials against
+      Google Identity Toolkit (Firebase verifyPassword / securetoken refresh) —
+      not an OAuth 2.0 authorization-server flow of the API's own.
+  - id: oidc
+    conforms: false
+    evidence: No openIdConnect securityScheme; no /.well-known/openid-configuration (404 probed 2026-07-21).
+  - id: bearer-jwt
+    conforms: true
+    evidence: securitySchemes.bearer is http/bearer with bearerFormat JWT (openapi/vori-openapi.yml).
+  - id: rfc9457-problem-details
+    conforms: false
+    evidence: >-
+      Error responses are typed application/json DTOs (DuplicateBarcodesError,
+      InsufficientPermissionsError, UnsupportedStateFieldError, ...), not
+      application/problem+json.
+  - id: pagination
+    conforms: true
+    evidence: >-
+      Documented list-endpoint contract: URL-encoded state JSON with
+      startRow/endRow (max 1000 rows), filterModel, sortModel; response carries
+      total rowCount (https://help.vori.com/api/introduction).
+  - id: idempotency
+    conforms: false
+    evidence: No idempotency-key header or idempotent-retry contract documented in the API docs or spec.
+  - id: json-api
+    conforms: false
+    evidence: Responses are plain JSON DTOs, not JSON:API envelopes.
+  - id: odata
+    conforms: false
+    evidence: Filtering uses a proprietary AG-Grid-style state/filterModel object, not OData query syntax.
+  - id: scim
+    conforms: false
+    evidence: No SCIM user-provisioning surface published.

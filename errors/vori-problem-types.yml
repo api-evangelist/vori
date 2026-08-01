@@ -1,0 +1,81 @@
+generated: '2026-07-21'
+method: derived
+source: openapi/vori-openapi.yml
+format: json
+description: >-
+  Error catalog derived from the 4xx responses in the harvested Vori OpenAPI.
+  Errors are typed application/json DTO schemas (not RFC 9457 problem+json).
+  400s name the specific validation failure; 403s distinguish permission from
+  banner-association failures; 404s are returned bodiless for missing products.
+envelope: >-
+  Typed error object per failure (anyOf unions in the spec); list endpoints
+  reject unsupported state/filter fields with a 400 naming the field.
+problems:
+  - status: 400
+    title: Duplicate barcode types for product
+    schema: DuplicateBarcodeTypesForProductError
+    source_operation: openapi/vori-openapi.yml#createStoreProduct
+  - status: 400
+    title: Duplicate barcodes
+    schema: DuplicateBarcodesError
+    source_operation: openapi/vori-openapi.yml#createStoreProduct
+  - status: 400
+    title: Invalid barcode
+    schema: InvalidBarcodeError
+    source_operation: openapi/vori-openapi.yml#createStoreProduct
+  - status: 400
+    title: Invalid department
+    schema: InvalidDepartmentError
+    source_operation: openapi/vori-openapi.yml#createStoreProduct
+  - status: 400
+    title: Invalid food modifiers
+    schema: InvalidFoodModifiersError
+    source_operation: openapi/vori-openapi.yml#createStoreProduct
+  - status: 400
+    title: Invalid item modifiers
+    schema: InvalidItemModifiersError
+    source_operation: openapi/vori-openapi.yml#createStoreProduct
+  - status: 400
+    title: Invalid tax rates
+    schema: InvalidTaxRatesError
+    source_operation: openapi/vori-openapi.yml#createStoreProduct
+  - status: 400
+    title: Invalid unit of measure
+    schema: InvalidUnitOfMeasureError
+    source_operation: openapi/vori-openapi.yml#createStoreProduct
+  - status: 400
+    title: Invalid variable weights
+    schema: InvalidVariableWeightsError
+    source_operation: openapi/vori-openapi.yml#createStoreProduct
+  - status: 400
+    title: Soft-deleted barcode conflict
+    schema: SoftDeletedBarcodeConflictError
+    remediation: Restore the soft-deleted product that owns the barcode (restoreStoreProduct) or use a different barcode.
+    source_operation: openapi/vori-openapi.yml#createStoreProduct
+  - status: 400
+    title: Invalid stores
+    schema: InvalidStoresError
+    source_operation: openapi/vori-openapi.yml#listStoreProducts
+  - status: 400
+    title: Unsupported state field
+    schema: UnsupportedStateFieldError
+    remediation: >-
+      Only startRow, endRow, filterModel, and sortModel are allowed in the state
+      parameter, and only documented fields are filterable; the error names the
+      offending field.
+    source_operation: openapi/vori-openapi.yml#listStoreProducts
+  - status: 403
+    title: Insufficient permissions
+    schema: InsufficientPermissionsError
+    remediation: Authenticate with a user whose role grants the needed access; use a Read-only banner-level role for read integrations.
+    source_operation: openapi/vori-openapi.yml#listStoreProducts
+  - status: 403
+    title: No banner association
+    schema: NoBannerAssociationError
+    remediation: The authenticated user must be associated with the store's banner.
+    source_operation: openapi/vori-openapi.yml#listStoreProducts
+  - status: 404
+    title: Store product not found
+    schema: null
+    detail: Returned without a body for unknown product ids.
+    source_operation: openapi/vori-openapi.yml#getStoreProduct

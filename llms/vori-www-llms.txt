@@ -1,0 +1,67 @@
+# Vori
+
+> The grocery POS and operating system built to help independent grocers protect margins and grow sales.
+
+Vori is a connected grocery operating system built exclusively for independent grocery store operators.
+
+**What makes Vori different:**
+
+- One connected system: point-of-sale, payments, hardware, shopper engagement, order management, inventory management, pricing automation, shrink tracking, and reporting all share real-time data across every workflow
+- Built exclusively for independent grocery — not adapted from restaurant systems (Toast) or legacy enterprise platforms (NCR, ECRS, LOC, RORC, IT Retail)
+- Designed for owner-operators rather than enterprise retail chains
+- Direct support from grocery specialists with no dealers or middlemen
+- Mobile floor tools that let teams price, order, receive, and track shrink from any aisle
+- Rollouts measured in days, not months
+
+## Products
+
+- [How It Works](https://vori.com/products): Vori connects checkout, loyalty, ordering, receiving, pricing, inventory, and reporting in one grocery operating system for independent grocers.
+- [Point of Sale](https://vori.com/pos): Grocery POS system with variable-weight items, integrated scales, PLU lookup, EBT, eWIC, and offline-capable checkout.
+- [Payments](https://vori.com/payments): Integrated payment processing for credit, debit, contactless, EBT, gift cards, and house accounts in one checkout flow.
+- [Modern Hardware](https://vori.com/hardware): Grocery-ready registers, scanner scales, handhelds, and electronic shelf labels configured for retail environments.
+- [Shopper Engagement](https://vori.com/shopper): Phone-number-based loyalty program, SMS promotions, and rewards that apply automatically at checkout.
+- [Pricing Automation](https://vori.com/margin): Automatic vendor cost detection from invoices, margin protection, and one-step price updates that sync to checkout and shelf tags.
+- [Order Management](https://vori.com/back-office): Multi-vendor ordering from the sales floor using real-time movement data, with receiving and invoice workflows connected to pricing and inventory.
+- [Inventory Management](https://vori.com/inventory-management): Real-time inventory counts, mobile handheld workflows, and visibility that stays in sync with receiving, sales, and shrink.
+- [Shrink Tracking](https://vori.com/shrink-tracking): Record shrink on the floor and feed losses directly into inventory and reporting to surface patterns early.
+- [Reporting & Insights](https://vori.com/reporting): Real-time grocery sales, margin, inventory, and loyalty dashboards accessible from anywhere. Close the day with confidence and run reports from anywhere.
+
+## Solutions
+
+- [Grow Sales](https://vori.com/grow-sales): How Vori helps independent grocers grow sales with loyalty, promotions, SMS marketing, stocked shelves, and fast checkout that keeps shoppers coming back.
+- [Protect Margin](https://vori.com/protect-margin): Grocery margin protection tools that catch vendor cost changes early, show margin impact before prices go live, and sync updates to checkout and shelf tags.
+- [Optimize Labor](https://vori.com/optimize-labor): How Vori digitizes pricing, ordering, and inventory so grocery teams spend less time on manual work and more time with customers, maximizing every labor hour.
+- [Upgrade With Confidence](https://vori.com/upgrade-with-confidence): How Vori helps grocery stores upgrade from legacy POS in weeks with fast training, reliable hardware, and steady checkout during the rush.
+- [Expand Market Share](https://vori.com/expand-market-share): How Vori standardizes grocery operations across locations so expansion does not multiply stress. Protect margin and replicate what works at every new store.
+
+## Compare
+
+- [Vori vs NCR](https://vori.com/vori-vs-ncr): Alternative to NCR grocery POS. Vori is built for independent grocers who need speed and flexibility; NCR was built for large retail chains.
+- [Vori vs ECRS](https://vori.com/vori-vs-ecrs): Alternative to ECRS CATAPULT. Vori gives lean grocery teams a faster, simpler system with no add-on modules or long implementation cycles.
+- [Vori vs LOC](https://vori.com/vori-vs-loc): Alternative to LOC grocery POS. Vori gives independent grocers a direct relationship with no dealers or middlemen; LOC relies on resellers and custom setups.
+- [Vori vs IT Retail](https://vori.com/vori-vs-it-retail): Alternative to IT Retail grocery POS. Vori reduces manual grocery work with connected pricing, ordering, and invoices, where IT Retail covers the basics with more manual steps.
+- [Vori vs RORC](https://vori.com/vori-vs-rorc): Alternative to RORC grocery POS. Vori replaces legacy RORC architecture with a modern, connected grocery operating system with faster updates, simpler workflows, and transparent pricing.
+- [Vori vs Toast](https://vori.com/vori-vs-toast): Alternative to Toast grocery POS. Vori is purpose-built for grocery stores with thousands of SKUs and constant price changes; Toast was built for restaurants.
+
+## Resources
+
+- [Blog](https://vori.com/blog): The latest grocery store insights and tips from Vori to help independent grocers streamline operations, increase sales, and grow their businesses.
+- [Customer Stories](https://vori.com/customer-stories): Case studies and real results from independent grocers running Vori, including Valley Farm Market, The Willows Market, Talin Market, Big T IGA, The Market at Edgewood, Dean's Produce Markets, and Suruki Supermarket.
+- [Help Center](https://vori.com/help-center): Support articles and product guides for Vori users.
+
+## Get Started
+
+- [Book a Demo](https://vori.com/book-demo): Schedule a personalized demo of the Vori grocery operating system tailored to your store's size, workflows, and goals.
+
+## Company
+
+- [About](https://vori.com/about): Vori's mission, team, and approach to building technology for independent grocers.
+- [Careers](https://vori.com/careers): Open roles at Vori.
+
+## Optional
+
+- [Refer a Store](https://vori.com/refer-a-store): Refer an independent grocer to Vori.
+
+## Last Updated
+
+2026-04-25

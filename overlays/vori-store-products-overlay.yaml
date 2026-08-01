@@ -1,0 +1,36 @@
+# API Evangelist enhancement overlay — never applied to the harvested spec in place.
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for the Vori API
+  version: 1.0.0
+extends: openapi/vori-openapi.yml
+actions:
+  - target: $.info
+    description: Stamp API Evangelist provenance and enrichment metadata
+    update:
+      x-apievangelist:
+        harvested: '2026-07-21'
+        source: https://help.vori.com/api-reference/store-products/
+        note: >-
+          Spec merged from the per-operation OpenAPI fragments Vori publishes on
+          its Mintlify docs pages; the canonical /api/openapi.json is login-gated.
+  - target: $.info
+    description: Add contact and docs pointers the published fragments omit
+    update:
+      contact:
+        name: Vori Help Center
+        url: https://help.vori.com/
+      x-documentation: https://help.vori.com/api/introduction
+  - target: $.externalDocs
+    description: Point at the API introduction (auth + state parameter semantics)
+    update:
+      description: Vori REST API introduction — authentication, pagination, filtering, sorting
+      url: https://help.vori.com/api/introduction
+  - target: $.paths['/v1/store-products'].get
+    description: Flag the state query parameter contract for agent consumers
+    update:
+      x-pagination:
+        style: rows-window
+        parameter: state
+        max_rows_per_request: 1000
+        default_sort: created_at desc

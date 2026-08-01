@@ -1,0 +1,14 @@
+{
+  "provider": "vori",
+  "sources": [
+    "vori-store-products-api-openapi.yml"
+  ],
+  "outputs": [
+    "vori-store-products-api-openapi.yml"
+  ],
+  "archived": [],
+  "errors": [],
+  "warnings": [],
+  "notes": [],
+  "skipped": []
+}

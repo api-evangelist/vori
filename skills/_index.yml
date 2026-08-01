@@ -1,0 +1,12 @@
+generated: '2026-07-21'
+method: generated
+source: openapi/vori-openapi.yml
+skills:
+  - file: vori-manage-store-products.md
+    name: Manage Vori store products
+    api: openapi/vori-openapi.yml
+    operations: [listStoreProducts, getStoreProduct, createStoreProduct, updateStoreProduct, restoreStoreProduct]
+  - file: vori-audit-product-changes.md
+    name: Search and audit Vori product changes
+    api: openapi/vori-openapi.yml
+    operations: [searchStoreProducts, listStoreProductHistory, listProcessedStoreProductRules, getProcessedStoreProductRule]
