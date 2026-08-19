@@ -1,0 +1,255 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Vori Store products API",
+    "version": "1.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Store products",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List store products",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.vori.com/v1/store-products",
+            "params": [
+              {
+                "name": "state",
+                "value": "",
+                "type": "query",
+                "description": "Filter, sort, and paginate products with a URL-encoded JSON object:\n\n```json\n{\n  \"startRow\": 0,\n  \"endRow\": 50,\n  \"filterModel\": { \"<field>\": <filter> },\n  \"sortModel\": [{ \"colId\": \"<field>\", \"sort\": \"asc\" }]\n}\n```\n\nAny other top-level property is rejected.\n\n**Pagination** — `startRow` and `endRow` select which slice of results to return: `startRow` defaults to 0, and `endRow` defaults to `startRow` plus 10. You can request at most 1000 rows at a time (`endRow - startRow <= 1000`). The response's `rowCount` field always reflects the total number of matching rows across the entire result set, not just the rows returned in this request.\n\n**Sorting** — `sortModel` orders results by any filterable field except the related-entity fields, plus `id`. If you don't specify a `sortModel`, results are sorted by `created_at` descending (newest first).\n\n**Filtering** — `filterModel` is an object keyed by field name, where each value describes how to match that field:\n\n| Filter | Example | `type` values | Fields |\n| ------ | ------- | --------------- | ------ |\n| Set | `{\"filterType\": \"set\", \"values\": [\"1\", \"2\"]}` | <ul><li><code>in</code></li><li><code>notIn</code></li></ul> | <ul><li><code>barcode_type</code></li><li><code>retail_price_uom_id</code></li><li><code>store_department_id</code></li><li><code>store_id</code></li><li><code>unit_of_measure_mapping_id</code></li></ul> |\n| Boolean | `{\"filterType\": \"boolean\", \"values\": [true]}` | <ul><li><code>in</code></li><li><code>notIn</code></li></ul> | <ul><li><code>active</code></li><li><code>earns_loyalty_points</code></li><li><code>ebt_enabled</code></li><li><code>ecommerce_enabled</code></li><li><code>esl_enabled</code></li><li><code>is_blackhawk_gift_card</code></li><li><code>is_reloadable_blackhawk_gift_card</code></li><li><code>is_tippable</code></li><li><code>manual_item</code></li><li><code>print_physical_tag</code></li><li><code>prompt_for_quantity</code></li><li><code>snap_incentive_earnable</code></li><li><code>snap_incentive_redeemable</code></li><li><code>sync_to_deli_scales</code></li><li><code>variable_sale_price</code></li><li><code>wic_enabled</code></li></ul> |\n| Text | `{\"filterType\": \"text\", \"type\": \"contains\", \"filter\": \"cola\"}` | <ul><li><code>equals</code></li><li><code>notEqual</code></li><li><code>contains</code></li><li><code>notContains</code></li><li><code>startsWith</code></li><li><code>endsWith</code></li><li><code>blank</code></li><li><code>notBlank</code></li></ul> | <ul><li><code>barcode</code></li><li><code>brand_string</code></li><li><code>country_of_origin</code></li><li><code>description</code></li><li><code>name</code></li><li><code>raw_barcode</code></li><li><code>unit_volume_string</code></li><li><code>wic_override_plu</code></li></ul> |\n| Number | `{\"filterType\": \"number\", \"type\": \"greaterThan\", \"filter\": 10}` | <ul><li><code>equals</code></li><li><code>notEqual</code></li><li><code>lessThan</code></li><li><code>lessThanOrEqual</code></li><li><code>greaterThan</code></li><li><code>greaterThanOrEqual</code></li><li><code>inRange</code></li><li><code>blank</code></li><li><code>notBlank</code></li></ul> | <ul><li><code>base_retail_price</code></li><li><code>case_cost</code></li><li><code>case_size</code></li><li><code>current_margin</code></li><li><code>each_cost</code></li><li><code>lb_cost</code></li><li><code>min_customer_age</code></li><li><code>pack_size</code></li><li><code>store_product.unit_of_measure_amount</code></li><li><code>target_margin</code></li></ul> |\n| Date | `{\"filterType\": \"date\", \"type\": \"greaterThan\", \"dateFrom\": \"2026-01-01\", \"dateTo\": null}` | <ul><li><code>equals</code></li><li><code>notEqual</code></li><li><code>lessThan</code></li><li><code>greaterThan</code></li><li><code>inRange</code></li><li><code>blank</code></li><li><code>notBlank</code></li></ul> | <ul><li><code>base_retail_price_start_time</code></li><li><code>created_at</code></li><li><code>updated_at</code></li></ul> |\n| Related entities | `{\"filterType\": \"set\", \"values\": [\"1\"]}` | <ul><li><code>in</code></li></ul> | <ul><li><code>store_product_item_modifiers.item_modifier_id</code></li><li><code>store_product_tax_rates.tax_rate_id</code></li><li><code>store_product_variable_weights.variable_weight_id</code></li></ul> |\n| Product group rules | `{\"filterType\": \"set\", \"values\": [\"0195f9a8-7d64-7c3a-b7f5-3e0a5a2b9c11\"]}` | <ul><li><code>in</code></li></ul> | <ul><li><code>store_product_group_rule_ids</code></li></ul> |\n\n`type` is optional for set and boolean filters and defaults to `in`. Boolean fields also accept set filters, and date fields also accept `\"filterType\": \"datetime\"`. Set filters must be flat — compound `AND`/`OR` conditions are rejected."
+              },
+              {
+                "name": "include",
+                "value": "",
+                "type": "query",
+                "description": "Comma-separated list of related data to include on each product:\n\n- `active_vendor` — Populates `active_vendor` with the product's primary vendor.\n- `active_vendor_product` — Populates `active_vendor_product` with the primary vendor's catalog entry, including costs.\n- `inventory` — Populates `inventory` with on-hand quantity data.\n- `store_vendor_products` — Populates `store_vendor_products` with every vendor's catalog entry for the product."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Lists store products. Use the `state` parameter to filter, sort, and paginate results."
+        },
+        {
+          "info": {
+            "name": "Create store product",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.vori.com/v1/store-products",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Create store product"
+        },
+        {
+          "info": {
+            "name": "Get processed store product rule",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.vori.com/v1/store-products/:id/rules",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Get processed store product rule"
+        },
+        {
+          "info": {
+            "name": "Get store product",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.vori.com/v1/store-products/:id",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "include",
+                "value": "",
+                "type": "query",
+                "description": "Comma-separated list of related data to include on each product:\n\n- `active_vendor` — Populates `active_vendor` with the product's primary vendor.\n- `active_vendor_product` — Populates `active_vendor_product` with the primary vendor's catalog entry, including costs.\n- `inventory` — Populates `inventory` with on-hand quantity data.\n- `store_vendor_products` — Populates `store_vendor_products` with every vendor's catalog entry for the product."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Get store product"
+        },
+        {
+          "info": {
+            "name": "Update store product",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "https://api.vori.com/v1/store-products/:id",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Update store product"
+        },
+        {
+          "info": {
+            "name": "List processed store product rules",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.vori.com/v1/store-products/rules",
+            "params": [
+              {
+                "name": "state",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "List processed store product rules"
+        },
+        {
+          "info": {
+            "name": "List store product history",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.vori.com/v1/store-products/:id/history",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "state",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Retrieve change history for a specific store product"
+        },
+        {
+          "info": {
+            "name": "Restore store product",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.vori.com/v1/store-products/:id/restore",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Restore a soft-deleted store product"
+        },
+        {
+          "info": {
+            "name": "Search store products",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.vori.com/v1/store-products/search",
+            "params": [
+              {
+                "name": "page",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "take",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "store_ids",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "query",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "active",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Endpoint for fast full-text product search. This returns only what is indexed in Algolia and does not hit the database."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}
