@@ -82,6 +82,9 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: CapabilityMap
+  url: capabilities/vori-capability-edges.yml
+  name: Vori Business Capability Map
 - type: Website
   url: https://www.vori.com
 - type: Documentation
