@@ -68,7 +68,7 @@ apis:
   humanURL: https://help.vori.com/api/introduction
   baseURL: https://api.vori.com
   tags:
-  - Store products
+  - Store Products
   tags_raw:
   - Store products
   properties:
