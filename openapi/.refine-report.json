@@ -1,7 +1,7 @@
 {
   "provider": "vori",
   "sources": [
-    "vori-store-products-api-openapi.yml"
+    "_original/vori-openapi.yml"
   ],
   "outputs": [
     "vori-store-products-api-openapi.yml"
@@ -9,6 +9,13 @@
   "archived": [],
   "errors": [],
   "warnings": [],
-  "notes": [],
-  "skipped": []
+  "notes": [
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "vori-openapi.yml: upgraded openapi 3.0.0 -> OpenAPI 3.2.0",
+    "vori-openapi.yml: declared missing tag: Store products",
+    "apis.yml register: already-registered"
+  ],
+  "skipped": [
+    "vori-store-products-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
 }
